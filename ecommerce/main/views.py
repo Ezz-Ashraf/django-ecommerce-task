@@ -103,17 +103,28 @@ def add_to_cart(request):
     if request.method == "POST":
         productId = request.POST['product']
         quantity = request.POST['quantity']
-        product = Product.objects.filter(pk=productId)
-        serializedProduct = serializers.serialize('json', product)
-        jsonProduct = json.loads(serializedProduct)
-        # Don't forget to add validation of finding the product
-        price = jsonProduct[0].get("fields").get("price")
-        Cart.objects.create(customer=request.user, product=serializedProduct, quantity = int(quantity) ,price = int(quantity) * float(price))
-
-        return JsonResponse({
-        "message": "Added to Cart Succesfully"
+        product = Product.objects.get(pk=productId)
+        if (product):
+            #serializedProduct = serializers.serialize('json', product)
+            #jsonProduct = json.loads(serializedProduct)
+            #productPrice = jsonProduct[0].get("fields").get("price")
+            #productName = jsonProduct[0].get("fields").get("name")
+            #productCreatedAt = jsonProduct[0].get("fields").get("created_at")
+            #productUpdatedAt = jsonProduct[0].get("fields").get("updated_at")
+            #productPK = jsonProduct[0].get("fields").get("pk")
+            #productInstance = Product(pk=productPK, name=productName, price=productPrice, 
+            #                          created_at=productCreatedAt,
+            #                          updated_at=productUpdatedAt)
+            Cart.objects.create(customer=request.user, product=product, quantity = int(quantity) ,price = int(quantity) * product.price)
+            return JsonResponse({
+        "message": "Added to cart successfully"
         })
-    
+
+        else:
+            return JsonResponse({
+        "message": "No Such a product exists"
+        })
+        
     else:
         return JsonResponse({
         "message": "Request must be Post"
@@ -135,10 +146,10 @@ def get_cart(request):
         })
 
 @csrf_exempt
-def get_order(request):
+def get_orders(request):
     if request.method == "GET":
-        order = Order.objects.filter(customer=request.user.id)
-        data = serializers.serialize('json', cart)
+        orders = Order.objects.filter(customer=request.user.id)
+        data = serializers.serialize('json', orders)
         return JsonResponse({
             "products":json.loads(data)
         })
@@ -148,11 +159,41 @@ def get_order(request):
         })
 
 @csrf_exempt
+def get_orders_details(request):
+    if request.method == "GET":
+        orders = OrderItem.objects.filter(customer=request.user.id)
+        data = serializers.serialize('json', orders)
+        return JsonResponse({
+            "orders":json.loads(data)
+        })
+    else:
+        return JsonResponse({
+        "message": "Request must be Post"
+        })
+
+@csrf_exempt
 def create_order(request):
     if request.method == "POST":
-        username = request.POST['username']
-        password = request.POST['password']
-
+        cartItems = Cart.objects.filter(customer=request.user.id)
+        cartItemsSerialized = serializers.serialize('json', cartItems)
+        cartItemsJson = json.loads(cartItemsSerialized)
+        itemsSet = set()
+        totalPrice = 0
+        for item in cartItemsJson:
+            product = Product.objects.get(pk=int(item.get("fields").get("product")))
+            itemsSet.add(product.name)
+            totalPrice += item.get("fields").get("price")
+        order = Order(customer=request.user, products=list(itemsSet) , totalPrice=totalPrice)
+        order.save()
+        for item in cartItemsJson:
+            product = Product.objects.get(pk=item.get("fields").get("product"))
+            order_item = OrderItem(customer=request.user, product=product, order=order,
+                                   quantity=item.get("fields").get("quantity"),price=item.get("fields").get("price") )
+            order_item.save()
+        Cart.objects.filter(customer=request.user.id).delete()
+        return JsonResponse({
+            "message": "Order Saved ,Cart is empty now"
+        })
     else:
         return JsonResponse({
         "message": "Request must be Post"

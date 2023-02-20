@@ -9,5 +9,8 @@ urlpatterns = [
     path('products', views.get_products),
     path('logout', views.log_out),
     path('login', views.log_in),
-    # path('create-post', views.create_post, name='create_post'),
+    path('add-to-cart', views.add_to_cart),
+    path('create-order', views.log_in),
+    path('get-orders', views.log_in),
+    path('get-cart', views.log_in),
 ]

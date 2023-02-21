@@ -1,8 +1,6 @@
-from django.shortcuts import render, redirect
 from .forms import RegisterForm
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.models import User, Group
 from .models import Product , Cart , Order , OrderItem
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -12,7 +10,6 @@ from django.db.models import Q
 
 @login_required(login_url="/admin/")
 def home(request):  
-    # posts = Post.objects.all()
     return JsonResponse({
     "message": "index endpoint"
     })
@@ -21,8 +18,6 @@ def home(request):
 @csrf_exempt
 def sign_up(request):
     if request.method == 'POST':
-        #mydata = json.loads(request.body)
-        #print(mydata.get('username'))
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
@@ -50,8 +45,8 @@ def get_username(request):
         return JsonResponse({
         "status": True
         })
+    
 @login_required(login_url="/admin/")
-@csrf_exempt
 def get_products(request):
     if request.method == "GET":
         products = Product.objects.all()

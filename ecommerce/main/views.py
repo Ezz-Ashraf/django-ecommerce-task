@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.core import serializers
 import json
-# import json
+from django.db.models import Q
 
 @login_required(login_url="/admin/")
 def home(request):  
@@ -64,6 +64,18 @@ def get_products(request):
         "message": "Request Must be get"
         })
     
+def get_products_ordered(request):
+    if request.method == "GET":
+        products = Product.objects.all().order_by('price')
+        data = serializers.serialize('json', products)
+        return JsonResponse({
+            "products":json.loads(data)
+        })
+    else:
+        return JsonResponse({
+        "message": "Request Must be get"
+        })
+
 @csrf_exempt
 def log_out(request):
     if request.method == "POST":
@@ -97,7 +109,7 @@ def log_in(request):
         "message": "Request must be Post"
         })
     
-
+@login_required(login_url="/")
 @csrf_exempt
 def add_to_cart(request):
     if request.method == "POST":
@@ -130,7 +142,7 @@ def add_to_cart(request):
         "message": "Request must be Post"
         })
     
-
+@login_required(login_url="/")
 @csrf_exempt
 def get_cart(request):
     if request.method == "GET":
@@ -145,6 +157,7 @@ def get_cart(request):
         "message": "Request must be gET"
         })
 
+@login_required(login_url="/")
 @csrf_exempt
 def get_orders(request):
     if request.method == "GET":
@@ -158,6 +171,23 @@ def get_orders(request):
         "message": "Request must be Post"
         })
 
+@login_required(login_url="/")
+@csrf_exempt
+def get_product_by_name(request):
+    if request.method == "GET":
+        productName = request.GET.get('q','')
+        #orders = Product.objects.filter(name__contains=productName)
+        orders = Product.objects.filter(Q(name__contains=productName.lower()) | Q(name__contains=productName.upper()))
+        data = serializers.serialize('json', orders)
+        return JsonResponse({
+            "products":json.loads(data)
+        })
+    else:
+        return JsonResponse({
+        "message": "Request must be Post"
+        })
+
+@login_required(login_url="/")
 @csrf_exempt
 def get_orders_details(request):
     if request.method == "GET":
@@ -171,6 +201,7 @@ def get_orders_details(request):
         "message": "Request must be Post"
         })
 
+@login_required(login_url="/")
 @csrf_exempt
 def create_order(request):
     if request.method == "POST":

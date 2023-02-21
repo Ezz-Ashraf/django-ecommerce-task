@@ -7,6 +7,7 @@ urlpatterns = [
     path('sign-up', views.sign_up, name='sign_up'),
     path('username', views.get_username),
     path('products', views.get_products),
+    path('products-ordered', views.get_products_ordered),
     path('logout', views.log_out),
     path('login', views.log_in),
     path('add-to-cart', views.add_to_cart),
@@ -14,4 +15,5 @@ urlpatterns = [
     path('get-orders', views.get_orders),
     path('get-orders-details', views.get_orders_details),
     path('get-cart', views.get_cart),
+    path('get-product/', views.get_product_by_name),
 ]

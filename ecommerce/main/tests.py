@@ -1,3 +1,7 @@
 from django.test import TestCase
 
-# Create your tests here.
+
+class ecommerceTestCase(TestCase):
+
+    def test_animals_can_speak(self):
+        self.assertEqual(7, 4)
